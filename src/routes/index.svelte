@@ -11,20 +11,20 @@
 	});
 	const channel = new BroadcastChannel('boostmequotes');
 
-	channel.onmessage = ((ev: MessageEvent<IMessage>) => {
+	channel.onmessage = (ev: MessageEvent<IMessage>) => {
 		if (ev.data.type !== 'reply') {
 			return;
 		}
 
 		console.log('Reply msg');
 		console.log(ev.data);
-		
+
 		switch (ev.data.name) {
 			case 'getSettings':
 				getSettingsReply(ev.data.args);
 				return;
 		}
-	});
+	};
 
 	onMount(() => {
 		getFMToken();
@@ -36,13 +36,13 @@
 		channel.close();
 	});
 
-	function getSettings () {
+	function getSettings() {
 		channel.postMessage({
 			name: 'getSettings'
-		})
+		});
 	}
 
-	function getSettingsReply (data: ISettings | null) {
+	function getSettingsReply(data: ISettings | null) {
 		console.log(data);
 		if (data) {
 			$formValue = data;
@@ -56,7 +56,8 @@
 			instance.useServiceWorker(await navigator.serviceWorker.getRegistration('service-worker.js'));
 
 			instance.onMessage((payload) => {
-				new Notification('Hi there! This is live', payload);
+				// TODO: Update to right notification
+				new Notification('Boost me Quotes', payload);
 			});
 
 			instance
@@ -90,7 +91,11 @@
 		channel.postMessage({
 			name: 'saveSettings',
 			args: $formValue
-		})
+		});
+
+		channel.postMessage({
+			name: 'boostMe'
+		});
 	}
 </script>
 

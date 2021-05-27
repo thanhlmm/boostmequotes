@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween)
 import { PouchDB } from '@svouch/pouchdb';
-const db = new PouchDB('dbname', { adapter: 'idb' });
+let db = new PouchDB('quotes');
 const channel = new BroadcastChannel('boostmequotes');
 const settingsDb = new PouchDB('boostmequotes_settings');
 
@@ -51,6 +51,8 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 });
 
+let quoteRunnner;
+
 // Users action
 const settings: ISettings = {
   time: 'workday',
@@ -86,10 +88,12 @@ channel.onmessage = ((ev: MessageEvent<IMessage>) => {
     case 'getSettings':
       getSettings();
       return;
+    case 'boostMe':
+      boostMe();
   }
 });
 
-function saveSettings(data: ISettings) : Promise<boolean> {
+function saveSettings(data: ISettings): Promise<boolean> {
   return settingsDb.get('settings').then(doc => {
     return settingsDb.put({
       _id: 'settings',
@@ -166,29 +170,45 @@ function getAllQuotes(): Promise<IQuotes[]> {
 }
 
 async function syncQuotesToDb(): Promise<boolean> {
-  return fetch('http://example.com/movies.json')
+  console.log("Start sync quotes")
+  if (!navigator.onLine) {
+    console.warn("Devide is offline, delay the sync");
+    return false;
+  }
+
+  console.log("Fetch new quotes")
+  return fetch('https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes')
     .then(response => response.json())
     .then(async data => {
       console.log(data)
+
+      // Destroy then create new data again
       await db.destroy();
-      db.bulkDocs(data.quote);
+      db = new PouchDB('quotes');
+      db.bulkDocs(data.quotes);
 
       return false;
     }).catch((error) => {
+      console.log("Failed to sync the quotes")
       console.log(error);
 
       return false;
     });
 }
 
-async function getSuitableNotification(): Promise<IQuotes | null> {
-  const now = dayjs();
+setInterval(() => {
+  syncQuotesToDb();
+}, 12 * 24 * 60 * 60 * 1000); // Sync quotes each half day
+
+async function getSuitableQuote(): Promise<IQuotes | null> {
   const quotes = await getAllQuotes();
 
   const quotesByTime = quotes.filter(quote => {
     const [start, end] = quote.timerange;
     return dayjs().isBetween(dayjs(start, 'HH:mm'), dayjs(end, 'HH:mm'), 'hour')
   });
+
+  console.log("Current shift", getShift());
 
   const tagTime = tagPrefer[getShift()];
 
@@ -207,7 +227,8 @@ async function getSuitableNotification(): Promise<IQuotes | null> {
 }
 
 function sendTodayNotification(timeout: number) {
-  setTimeout(async () => {
+  quoteRunnner = setTimeout(async () => {
+    console.log("Start checking for new quotes");
     let shouldStopSendNotification = shouldSendQuotesToday(settings);
     const timePerNotification = totalTimePerDay[settings.time] / settings.maxQuotes;
 
@@ -224,7 +245,8 @@ function sendTodayNotification(timeout: number) {
 
     totalToday++;
 
-    const notification = await getSuitableNotification();
+    console.log("Getting suitable quotes");
+    const notification = await getSuitableQuote();
     // TODO: Save quotes to history
     if (notification) {
       self.registration.showNotification('Boost me Quotes', notification as any as NotificationOptions);
@@ -235,5 +257,10 @@ function sendTodayNotification(timeout: number) {
 }
 
 function boostMe() {
+  syncQuotesToDb();
+
+  if (quoteRunnner) {
+    clearTimeout(quoteRunnner);
+  }
   sendTodayNotification(15 * 1000); // 15 secs
 }
