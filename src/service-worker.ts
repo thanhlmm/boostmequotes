@@ -258,6 +258,9 @@ function sendTodayNotification(timeout: number) {
 
 function boostMe() {
   syncQuotesToDb();
+  self.registration.showNotification('Boost me Quotes', {
+    body: 'Setup complete 🚀'
+  });
 
   if (quoteRunnner) {
     clearTimeout(quoteRunnner);
