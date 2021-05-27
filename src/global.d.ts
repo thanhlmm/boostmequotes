@@ -20,3 +20,9 @@ interface IQuotes {
     icon?: string;
     timerange: [string, string];
 }
+
+interface IMessage {
+    name: string;
+    type: "invoke" | "reply"
+    args: any;
+}

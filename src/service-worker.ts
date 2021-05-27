@@ -10,7 +10,8 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween)
 import { PouchDB } from '@svouch/pouchdb';
 const db = new PouchDB('dbname', { adapter: 'idb' });
-// const settingsDb = new PouchDB('boostmequotes_settings');
+const channel = new BroadcastChannel('boostmequotes');
+const settingsDb = new PouchDB('boostmequotes_settings');
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBK5XaWLple3MeGuzp1GfU7HKKRe2T03KI',
@@ -50,7 +51,7 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 });
 
-// Automatically quotes
+// Users action
 const settings: ISettings = {
   time: 'workday',
   maxQuotes: 5,
@@ -72,6 +73,59 @@ const tagPrefer: Record<IShift, string[]> = {
   afternoon: ['productive', 'inspired', 'funny', 'life'],
   night: ['love', 'funny', 'life', 'fact']
 }
+
+channel.onmessage = ((ev: MessageEvent<IMessage>) => {
+  if (ev.data.type === 'reply') {
+    return;
+  }
+
+  switch (ev.data.name) {
+    case 'saveSettings':
+      saveSettings(ev.data.args);
+      return;
+    case 'getSettings':
+      getSettings();
+      return;
+  }
+});
+
+function saveSettings(data: ISettings) : Promise<boolean> {
+  return settingsDb.get('settings').then(doc => {
+    return settingsDb.put({
+      _id: 'settings',
+      _rev: doc._rev,
+      ...data
+    });
+  }).catch((error) => {
+    return settingsDb.put({
+      _id: 'settings',
+      ...data
+    });
+  }).then(() => {
+    return true;
+  }).catch((error) => {
+    console.log('saveSettings error')
+    console.log(error);
+  })
+}
+
+function getSettings() {
+  settingsDb.get('settings').then(doc => {
+    channel.postMessage({
+      name: 'getSettings',
+      type: 'reply',
+      args: doc
+    });
+  }).catch(() => {
+    channel.postMessage({
+      name: 'getSettings',
+      type: 'reply',
+      args: null
+    });
+  })
+}
+
+// Automatically quotes
 
 function getShift(): IShift {
   const hour = dayjs().hour();
@@ -111,7 +165,7 @@ function getAllQuotes(): Promise<IQuotes[]> {
   // return [];
 }
 
-async function syncQuotesFromDb(): Promise<boolean> {
+async function syncQuotesToDb(): Promise<boolean> {
   return fetch('http://example.com/movies.json')
     .then(response => response.json())
     .then(async data => {
@@ -164,7 +218,7 @@ function sendTodayNotification(timeout: number) {
     }
 
     if (shouldStopSendNotification) {
-      sendTodayNotification(timePerNotification * 60 * 60 * 1000 + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 20 * 60 * 100);
+      sendTodayNotification(timePerNotification * 60 * 60 * 1000 + (Math.random() > 0.5 ? 1 : -1) * Math.random() * TIME_VOLALITY * 60 * 100);
       return;
     }
 
