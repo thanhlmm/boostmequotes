@@ -10,6 +10,7 @@
     "postcss:watch": "TAILWIND_MODE=watch postcss tailwind.css -o build.css"
   },
   "devDependencies": {
+    "@poppanator/sveltekit-svg": "^0.1.2",
     "@sveltejs/adapter-static": "^1.0.0-next.11",
     "@sveltejs/kit": "next",
     "@tailwindcss/jit": "^0.1.18",

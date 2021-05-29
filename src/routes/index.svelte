@@ -2,7 +2,9 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 
-	let topics = ['time', 'goal', 'productive', 'love', 'life', 'fact', 'funny'];
+	let topics: string[] = JSON.parse(
+		'["Age","Alone","Amazing","Anger","Anniversary","Architecture","Art","Attitude","Beauty","Best","Birthday","Brainy","Business","Car","Chance","Change","Christmas","Communication","Computers","Cool","Courage","Dad","Dating","Death","Design","Diet","Dreams","Easter","Education","Environmental","Equality","Experience","Experience","Failure","Faith","Family","Famous","Father\'s Day","Fear","Finance","Fitness","Food","Forgiveness","Freedom","Friendship","Funny","Future","Gardening","God","Good","Government","Graduation","Great","Happiness","Health","History","Home","Hope","Humor","Imagination","Independence","Inspirational","Intelligence","Jealousy","Jealousy","Knowledge","Leadership","Learning","Legal","Life","Love","Marriage","Medical","Memorial Day","Men","Mom","Money","Morning","Mother\'s Day","Motivational","Movies","Moving On","Music","Nature","New Year\'s","Parenting","Patience","Patriotism","Peace","Pet","Poetry","Politics","Positive","Power","Relationship","Religion","Religion","Respect","Romantic","Sad","Saint Patrick\'s Day","Science","Smile","Society","Space","Sports","Strength","Success","Sympathy","Teacher","Technology","Teen","Thankful","Thanksgiving","Time","Travel","Trust","Truth","Valentine\'s Day","Veterans Day","War","Wedding","Wisdom","Women","Work"]'
+	);
 	const formValue = writable<ISettings>({
 		tag: [],
 		time: 'alltimes',
@@ -101,12 +103,27 @@
 
 <!-- <h1 class="font-normal text-lg">Welcome to Boost me Quotes 👋</h1> -->
 
-<div class="max-w-5xl m-auto">
+<div class="max-w-5xl m-auto relative">
+	<div class="pl-16 md:absolute md:pl-0 left-32 top-1 md:top-2">
+		<img class="w-20 h-auto" style="transform:scaleX(-1)" src="./arrow.svg" alt="hero" />
+		<p class="md:pl-10 pt-2">Approve to get the quotes</p>
+	</div>
+	<div class="flex flex-col md:flex-row md:items-center p-6 mt-10 md:mt-36">
+		<div>
+			<h1 class="text-3xl font-medium mb-2">Boost me Quotes 😼</h1>
+			<p class="text-gray-500 max-w-md text-lg">
+				Show an inspirational Quotes randomly so you can get back your spirit to get your 💩 done
+			</p>
+		</div>
+		<div class="w-full md:w-2/3 md:pl-4">
+			<img src="./hero.svg" alt="hero" />
+		</div>
+	</div>
 	<form on:submit|preventDefault={handleOnSubmit}>
-		<div class="p-6 card bordered space-y-6 divide-y">
+		<div class="p-6 card bordered space-y-6">
 			<div>
 				<h2 class="card-title">Pick your interested topics</h2>
-				<div class="grid grid-cols-2 md:grid-cols-3">
+				<div class="grid grid-cols-2 md:grid-cols-4">
 					{#each topics as topic}
 						<div class="form-control flex-row">
 							<!-- svelte-ignore a11y-label-has-associated-control -->
@@ -128,7 +145,7 @@
 					{/each}
 				</div>
 			</div>
-
+			<hr />
 			<div>
 				<h2 class="card-title">Settings</h2>
 
@@ -178,7 +195,7 @@
 					</p> -->
 
 					<div>
-						<button class="btn btn-primary" type="submit">Boost me</button>
+						<button class="btn btn-primary" type="submit">Boost me 🚀</button>
 					</div>
 				</div>
 			</div>
