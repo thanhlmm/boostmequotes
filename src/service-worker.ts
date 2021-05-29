@@ -181,7 +181,7 @@ async function syncQuotesToDb(): Promise<boolean> {
   const data: IQuotes[] = [];
   let page = 0;
   while (true) {
-    const pageData = await fetch('https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes')
+    const pageData = await fetch(`https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes?page=${page}`)
       .then(response => response.json())
       .then(async data => {
         return data.quotes as IQuotes[];
