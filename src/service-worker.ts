@@ -248,6 +248,7 @@ async function getSuitableQuote(): Promise<IQuotes | null> {
 }
 
 function sendTodayNotification(timeout: number) {
+  console.log(`Schedule quotes for next ${timeout} ms`)
   quoteRunnner = setTimeout(async () => {
     // Day reseter
     if (dayjs().isAfter(lastDay, 'd')) {
