@@ -5,6 +5,8 @@
 	let topics: string[] = JSON.parse(
 		'["Age","Alone","Amazing","Anger","Anniversary","Architecture","Art","Attitude","Beauty","Best","Birthday","Brainy","Business","Car","Chance","Change","Christmas","Communication","Computers","Cool","Courage","Dad","Dating","Death","Design","Diet","Dreams","Easter","Education","Environmental","Equality","Experience","Experience","Failure","Faith","Family","Famous","Father\'s Day","Fear","Finance","Fitness","Food","Forgiveness","Freedom","Friendship","Funny","Future","Gardening","God","Good","Government","Graduation","Great","Happiness","Health","History","Home","Hope","Humor","Imagination","Independence","Inspirational","Intelligence","Jealousy","Jealousy","Knowledge","Leadership","Learning","Legal","Life","Love","Marriage","Medical","Memorial Day","Men","Mom","Money","Morning","Mother\'s Day","Motivational","Movies","Moving On","Music","Nature","New Year\'s","Parenting","Patience","Patriotism","Peace","Pet","Poetry","Politics","Positive","Power","Relationship","Religion","Religion","Respect","Romantic","Sad","Saint Patrick\'s Day","Science","Smile","Society","Space","Sports","Strength","Success","Sympathy","Teacher","Technology","Teen","Thankful","Thanksgiving","Time","Travel","Trust","Truth","Valentine\'s Day","Veterans Day","War","Wedding","Wisdom","Women","Work"]'
 	);
+	let isInstalledWorker = navigator.serviceWorker.controller?.state === 'activated';
+
 	const formValue = writable<ISettings>({
 		tag: [],
 		time: 'alltimes',
@@ -31,7 +33,19 @@
 	onMount(() => {
 		getFMToken();
 		getSettings();
-		// TODO: Get form value from local state and save it
+		navigator.serviceWorker.getRegistration('service-worker.js').then((registration) => {
+			console.log(registration);
+			if (registration.active) {
+				isInstalledWorker = true;
+			}
+
+			// TODO: Get service worker and sync to state
+			// registration.installing.onstatechange = (event) => {
+			// 	if (registration.active) {
+			// 		isInstalledWorker = true;
+			// 	}
+			// };
+		});
 	});
 
 	onDestroy(() => {
@@ -195,6 +209,9 @@
 					</p> -->
 
 					<div>
+						{#if !isInstalledWorker}
+							<p class="text-gray-500 mb-2">Please wait while we setting up the notification</p>
+						{/if}
 						<button class="btn btn-primary" type="submit">Boost me 🚀</button>
 					</div>
 				</div>
