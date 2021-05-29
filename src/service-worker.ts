@@ -178,7 +178,7 @@ async function syncQuotesToDb(): Promise<boolean> {
   }
 
   console.log("Fetch new quotes");
-  const data: IQuotes[] = [];
+  let data: IQuotes[] = [];
   let page = 0;
   while (true) {
     const pageData = await fetch(`https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes?page=${page}`)
@@ -194,6 +194,8 @@ async function syncQuotesToDb(): Promise<boolean> {
     if (pageData.length <= 0) {
       break;
     }
+
+    data = [...data, ...pageData];
 
     page++;
   }
