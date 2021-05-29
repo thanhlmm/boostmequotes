@@ -222,9 +222,12 @@ async function getSuitableQuote(): Promise<IQuotes | null> {
     .filter(quote => !todayQuotes.includes(quote._id))
     .map(quote => {
       let rank = 0;
-      const [start, end] = quote.timerange;
-      if (dayjs().isBetween(dayjs(start, 'HH:mm'), dayjs(end, 'HH:mm'), 'hour')) {
-        rank++;
+
+      if (quote.timerange) {
+        const [start, end] = quote.timerange;
+        if (dayjs().isBetween(dayjs(start, 'HH:mm'), dayjs(end, 'HH:mm'), 'hour')) {
+          rank++;
+        }
       }
 
       if (quote.tag.some(quote => tagTime.includes(quote))) {

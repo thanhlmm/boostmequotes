@@ -19,7 +19,7 @@ interface IQuotes {
     image?: string;
     tag: string[];
     icon?: string;
-    timerange: [string, string];
+    timerange?: [string, string];
 }
 
 interface IMessage {
