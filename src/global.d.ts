@@ -12,6 +12,7 @@ interface ISettings {
 }
 
 interface IQuotes {
+    _id: string;
     body: string;
     author: string;
     url?: string;
