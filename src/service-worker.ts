@@ -240,8 +240,6 @@ async function getSuitableQuote(): Promise<IQuotes | null> {
     })
     .sort((a, b) => a.rank - b.rank);
 
-  console.log(quotesSuitable);
-
   const shiftQuotes = quotesSuitable.filter(quote => quote.rank === 1);
 
   const bestQuote = shiftQuotes.length > 3 ? getRandom(shiftQuotes) : getRandom(quotesSuitable);
