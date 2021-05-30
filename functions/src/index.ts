@@ -78,7 +78,7 @@ export const sendQuotes = functions.pubsub.schedule('every 5 minutes').onRun(asy
       await messaging.send({
         token: userData.pushToken,
         notification: {
-          title: "Boost me Quotes",
+          title: quote.author,
           body: quote.body,
         }
       });
