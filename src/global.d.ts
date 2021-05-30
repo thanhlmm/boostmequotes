@@ -1,6 +1,6 @@
 /// <reference types="@sveltejs/kit" />
 
-type ITimeRange = 'workday' | 'weekend' | 'alltimes'
+type ITimeRange = 'workday' | 'weekend' | 'alltimes';
 type IShift = 'morning' | 'afternoon' | 'night';
 
 interface ISettings {

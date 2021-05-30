@@ -5,6 +5,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import firebase from 'firebase/app';
 import 'firebase/messaging';
+import 'firebase/functions';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween)
@@ -12,6 +13,22 @@ import { PouchDB } from '@svouch/pouchdb';
 let db = new PouchDB('quotes');
 const channel = new BroadcastChannel('boostmequotes');
 const settingsDb = new PouchDB('boostmequotes_settings');
+
+
+self.addEventListener('install', event => {
+  // fires when the browser installs the app
+  // here we're just logging the event and the contents
+  // of the object passed to the event. the purpose of this event
+  // is to give the service worker a place to setup the local
+  // environment after the installation completes.
+  console.log(`SW: Event fired: ${event.type}`);
+
+  console.dir(event);
+  // force service worker activation
+  self.skipWaiting();
+  self.clients.claim()
+});
+
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBK5XaWLple3MeGuzp1GfU7HKKRe2T03KI',
@@ -90,23 +107,32 @@ channel.onmessage = ((ev: MessageEvent<IMessage>) => {
 });
 
 function saveSettings(data: ISettings): Promise<boolean> {
-  return settingsDb.get('settings').then(doc => {
-    return settingsDb.put({
-      _id: 'settings',
-      _rev: doc._rev,
-      ...data
-    });
-  }).catch((error) => {
-    return settingsDb.put({
-      _id: 'settings',
-      ...data
-    });
-  }).then(() => {
-    return true;
-  }).catch((error) => {
-    console.log('saveSettings error')
-    console.log(error);
-  })
+  return firebase.functions().httpsCallable('saveSettings')(data)
+    .catch((error) => {
+      console.log('saveSettings to Firebase')
+      console.log(error);
+    })
+    .then(
+      settingsDb.get('settings').then(doc => {
+        return settingsDb.put({
+          _id: 'settings',
+          _rev: doc._rev,
+          ...data
+        });
+      })
+    ).catch((error) => {
+      return settingsDb.put({
+        _id: 'settings',
+        ...data
+      });
+    }).then(() => {
+      return true;
+    }).catch((error) => {
+      console.log('saveSettings error')
+      console.log(error);
+
+      return false;
+    })
 }
 
 function getSettings() {
@@ -151,10 +177,6 @@ function getShift(): IShift {
   } else {
     return 'night'
   }
-}
-
-function getRandom<T>(input: T[]): T {
-  return input[Math.floor(Math.random() * input.length)];
 }
 
 function shouldSendQuotesToday(settings: ISettings): boolean {
@@ -215,9 +237,9 @@ async function syncQuotesToDb(): Promise<boolean> {
   return true;
 }
 
-setInterval(() => {
-  syncQuotesToDb();
-}, 12 * 24 * 60 * 60 * 1000); // Sync quotes each half day
+function getRandomItem<T>(input: T[]): T {
+  return input[Math.floor(Math.random() * input.length)];
+}
 
 async function getSuitableQuote(): Promise<IQuotes | null> {
   const quotes = await getAllQuotes();
@@ -250,15 +272,10 @@ async function getSuitableQuote(): Promise<IQuotes | null> {
 
   const shiftQuotes = quotesSuitable.filter(quote => quote.rank === 1);
 
-  const bestQuote = shiftQuotes.length > 3 ? getRandom(shiftQuotes) : getRandom(quotesSuitable);
+  const bestQuote = shiftQuotes.length > 3 ? getRandomItem(shiftQuotes) : getRandomItem(quotesSuitable);
 
   return bestQuote;
 }
-
-setTimeout(async () => {
-  // In case the new background is up and running
-  sendTodayNotification(15 * 1000);
-}, 5 * 60 * 1000); // 5mins
 
 function sendTodayNotification(timeout: number) {
   console.log(`Schedule quotes for next ${timeout} ms`);
@@ -305,14 +322,7 @@ function sendTodayNotification(timeout: number) {
 }
 
 function boostMe() {
-  syncQuotesToDb();
   self.registration.showNotification('Boost me Quotes', {
     body: 'Setup complete 🚀'
   });
-
-  if (quoteRunnner) {
-    clearTimeout(quoteRunnner);
-  }
-
-  sendTodayNotification(15 * 1000); // 15 secs
 }

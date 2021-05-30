@@ -6,7 +6,6 @@
 		'["Age","Alone","Amazing","Anger","Anniversary","Architecture","Art","Attitude","Beauty","Best","Birthday","Brainy","Business","Car","Chance","Change","Christmas","Communication","Computers","Cool","Courage","Dad","Dating","Death","Design","Diet","Dreams","Easter","Education","Environmental","Equality","Experience","Experience","Failure","Faith","Family","Famous","Father\'s Day","Fear","Finance","Fitness","Food","Forgiveness","Freedom","Friendship","Funny","Future","Gardening","God","Good","Government","Graduation","Great","Happiness","Health","History","Home","Hope","Humor","Imagination","Independence","Inspirational","Intelligence","Jealousy","Jealousy","Knowledge","Leadership","Learning","Legal","Life","Love","Marriage","Medical","Memorial Day","Men","Mom","Money","Morning","Mother\'s Day","Motivational","Movies","Moving On","Music","Nature","New Year\'s","Parenting","Patience","Patriotism","Peace","Pet","Poetry","Politics","Positive","Power","Relationship","Religion","Religion","Respect","Romantic","Sad","Saint Patrick\'s Day","Science","Smile","Society","Space","Sports","Strength","Success","Sympathy","Teacher","Technology","Teen","Thankful","Thanksgiving","Time","Travel","Trust","Truth","Valentine\'s Day","Veterans Day","War","Wedding","Wisdom","Women","Work"]'
 	);
 	let isInstalledWorker = navigator.serviceWorker.controller?.state === 'activated';
-
 	const formValue = writable<ISettings>({
 		tag: [],
 		time: 'alltimes',
@@ -35,17 +34,14 @@
 		getFMToken();
 		getSettings();
 		navigator.serviceWorker.getRegistration('service-worker.js').then((registration) => {
-			console.log(registration);
 			if (registration.active) {
 				isInstalledWorker = true;
 			}
 
-			// TODO: Get service worker and sync to state
-			// registration.installing.onstatechange = (event) => {
-			// 	if (registration.active) {
-			// 		isInstalledWorker = true;
-			// 	}
-			// };
+			navigator.serviceWorker.ready.then(() => {
+				// Get service worker and sync to state
+				isInstalledWorker = true;
+			});
 		});
 	});
 
@@ -87,9 +83,7 @@
 				})
 				.then((currentToken) => {
 					if (currentToken) {
-						console.log(currentToken);
-						// Send the token to your server and update the UI if necessary
-						// ...
+						$formValue.pushToken = currentToken;
 					} else {
 						// Show permission request UI
 						console.log('No registration token available. Request permission to generate one.');
@@ -104,6 +98,20 @@
 	}
 
 	function handleOnSubmit() {
+		if (Notification.permission !== 'granted') {
+			alert('You need grant permission on Notification to get awesome Quotes');
+			Notification.requestPermission().then((result) => {
+				if (result === 'granted') {
+					saveSetting();
+				}
+			});
+
+			return;
+		}
+		saveSetting();
+	}
+
+	function saveSetting() {
 		channel.postMessage({
 			name: 'saveSettings',
 			args: $formValue
@@ -120,13 +128,15 @@
 <div class="max-w-5xl m-auto relative">
 	<div class="pl-16 md:absolute md:pl-0 left-32 top-1 md:top-2">
 		<img class="w-20 h-auto" style="transform:scaleX(-1)" src="./arrow.svg" alt="hero" />
-		<p class="md:pl-10 pt-2">Approve to get the quotes</p>
+		<p class="md:pl-3 pt-2 text-center">Approve to<br />get your motivation back</p>
 	</div>
 	<div class="flex flex-col md:flex-row md:items-center p-6 mt-10 md:mt-36">
 		<div>
-			<h1 class="text-3xl font-medium mb-2">Boost me Quotes 😼</h1>
+			<h1 class="text-4xl font-medium mb-2">Boost me Quotes 😼</h1>
 			<p class="text-gray-500 max-w-md text-lg">
-				Show an inspirational Quotes randomly so you can get back your spirit to get your 💩 done
+				Get your 💩 done by showing an inspirational quotes randomly.
+				<br />
+				Gain your spirit back.
 			</p>
 		</div>
 		<div class="w-full md:w-2/3 md:pl-4">

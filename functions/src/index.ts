@@ -4,10 +4,14 @@ const cors = require('cors')({ origin: true });
 import * as cheerio from 'cheerio';
 import fetch from 'node-fetch';
 import sequence from 'promise-sequence';
-import { chunk } from 'lodash';
+import { chunk, random } from 'lodash';
+import * as dayjs from 'dayjs';
+import * as isBetween from 'dayjs/plugin/isBetween';
+dayjs.extend(isBetween)
 
 
 admin.initializeApp();
+const db = admin.firestore();
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
@@ -31,21 +35,126 @@ export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB
   });
 });
 
+export const saveSettings = functions.https.onCall(async (data: ISettings) => {
+  await admin.firestore().collection('users').add({
+    ...data,
+    remainingQuote: data.maxQuotes,
+    todayQuotes: [],
+    nextTrigger: dayjs().unix() + 30
+  });
+
+  if (data.pushToken) {
+    data.tag.forEach(async topic => {
+      await admin.messaging().subscribeToTopic(data.pushToken as string, topic);
+    })
+  }
+
+  return true;
+});
+
+export const sendQuotes = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+  // export const sendQuotes = functions.runWith({ timeoutSeconds: 120 }).https.onRequest(async (request, response) => {
+  const shard = random(0, 73);
+  const quotes = (await (await db.doc(`quotes/${shard}`).get()).data()?.data || []).map((quote: any, index: number) => ({
+    ...quote,
+    _id: `${shard}_${index}`
+  }));
+
+  const users = await db.collection('users')
+    .where('nextTrigger', "<=", dayjs().unix()).get()
+    .then(data => data.docs.map(doc => ({ ...doc.data(), _id: doc.id })));
+
+  functions.logger.info(`Prepare to send to`);
+  functions.logger.info(users);
+
+  const messaging = admin.messaging();
+  await Promise.all(users.map(async (user) => {
+    const userData = user as any as IUserState & ISettings;
+    const quote = getSuitableQuote(quotes, user as unknown as IUserState);
+    if (quote && userData.pushToken) {
+      // TODO: Refactor to send by topic
+
+      functions.logger.info(`Start send quote to ${userData.pushToken}`);
+      await messaging.send({
+        token: userData.pushToken,
+        notification: {
+          title: "Boost me Quotes",
+          body: quote.body,
+        }
+      });
+
+      functions.logger.info(`Save next trigger time`)
+      await saveUserState(userData._id, {
+        _id: userData._id,
+        remainingQuote: userData.remainingQuote - 1,
+        todayQuotes: [...(userData.todayQuotes || []), quote._id],
+        nextTrigger: getNextTrigger(userData)
+      });
+
+      return true;
+    }
+
+    return false;
+  }))
+
+  return true;
+});
+
+function getNextTrigger(setting: IUserState & ISettings): number {
+  if (setting.remainingQuote === 0) {
+    return dayjs().add(1, 'd').hour(7).unix();
+  }
+
+  return dayjs().add(1, 'h').unix();
+}
+
+
+function getRandomItem<T>(input: T[]): T {
+  return input[Math.floor(Math.random() * input.length)];
+}
+
+function getSuitableQuote(quotes: IQuotes[], userState: IUserState): IQuotes | null {
+  // TODO: Check if users is in right time to get quotes
+  const quotesSuitable = quotes
+    .filter(quote => !userState.todayQuotes.includes(quote._id))
+    .map(quote => {
+      let rank = 0;
+
+      if (quote.timerange) {
+
+        const [start, end] = quote.timerange;
+        if (dayjs().isBetween(dayjs(start, 'HH:mm'), dayjs(end, 'HH:mm'), 'hour')) {
+          rank++;
+        }
+      }
+
+      return {
+        ...quote,
+        rank,
+      };
+    })
+    .sort((a, b) => a.rank - b.rank);
+
+  const shiftQuotes = quotesSuitable.filter(quote => quote.rank >= 1);
+  const bestQuote = shiftQuotes.length > 3 ? getRandomItem(shiftQuotes) : getRandomItem(quotesSuitable);
+  return bestQuote;
+}
+
+function saveUserState(uid: string, state: IUserState): Promise<boolean> {
+  functions.logger.info(`Saving user state`);
+  functions.logger.info(state);
+  return db.doc(`users/${uid}`).update(state).then(() => true);
+}
+
 interface IQuoteURL {
   url: string; total: number
 }
 
-interface IQuotes {
-  body: string;
-  author: string;
-  tag: string[];
-  source?: string;
-}
 
 export const crawlBrainyquote = functions.runWith({ timeoutSeconds: 300, memory: "2GB" }).https.onRequest((request, response) => {
   const rootURL = 'https://www.brainyquote.com';
   const quotesUrl: IQuoteURL[] = [];
-  const quotes: IQuotes[] = []
+  const quotes: Partial<IQuotes>[] = []
   return fetch('https://www.brainyquote.com/topics')
     .then(response => response.text())
     .then(async data => {
