@@ -11,7 +11,8 @@
 		tag: [],
 		time: 'alltimes',
 		maxQuotes: 5,
-		receivedFromCommunity: true
+		receivedFromCommunity: true,
+		enabled: true
 	});
 	const channel = new BroadcastChannel('boostmequotes');
 
@@ -103,7 +104,6 @@
 	}
 
 	function handleOnSubmit() {
-		console.log($formValue);
 		channel.postMessage({
 			name: 'saveSettings',
 			args: $formValue

@@ -52,15 +52,9 @@ self.addEventListener('notificationclick', function (event) {
 });
 
 let quoteRunnner;
+let enableQuoteRunner = false;
 
 // Users action
-const settings: ISettings = {
-  time: 'workday',
-  maxQuotes: 5,
-  receivedFromCommunity: true,
-  tag: ['productive', 'inspire']
-}
-
 const totalTimePerDay: Record<ITimeRange, number> = {
   'workday': 8,
   'alltimes': 12,
@@ -128,7 +122,21 @@ function getSettings() {
       type: 'reply',
       args: null
     });
-  })
+  });
+}
+
+function getAppSettings(): Promise<ISettings> {
+  return settingsDb.get('settings').then(doc => {
+    return doc;
+  }).catch(() => {
+    return {
+      time: 'alltimes',
+      maxQuotes: '5',
+      receivedFromCommunity: true,
+      tag: ["Time", 'Relationship', 'Motivational'],
+      enabled: false,
+    }
+  });
 }
 
 // Automatically quotes
@@ -247,8 +255,17 @@ async function getSuitableQuote(): Promise<IQuotes | null> {
   return bestQuote;
 }
 
+setTimeout(async () => {
+  // In case the new background is up and running
+  sendTodayNotification(15 * 1000);
+}, 5 * 60 * 1000); // 5mins
+
 function sendTodayNotification(timeout: number) {
-  console.log(`Schedule quotes for next ${timeout} ms`)
+  console.log(`Schedule quotes for next ${timeout} ms`);
+  if (quoteRunnner) {
+    // Make sure we only have 1 runner
+    clearTimeout(quoteRunnner);
+  }
   quoteRunnner = setTimeout(async () => {
     // Day reseter
     if (dayjs().isAfter(lastDay, 'd')) {
@@ -256,10 +273,11 @@ function sendTodayNotification(timeout: number) {
       totalToday = 0;
       todayQuotes = [];
     }
-
-
     console.log("Start checking for new quotes");
-    let shouldStopSendNotification = shouldSendQuotesToday(settings);
+
+    const settings = await getAppSettings();
+
+    let shouldStopSendNotification = !settings.enabled || !shouldSendQuotesToday(settings);
     const timePerNotification = totalTimePerDay[settings.time] / settings.maxQuotes;
 
     if (totalToday > settings.maxQuotes) {
@@ -295,5 +313,6 @@ function boostMe() {
   if (quoteRunnner) {
     clearTimeout(quoteRunnner);
   }
+
   sendTodayNotification(15 * 1000); // 15 secs
 }

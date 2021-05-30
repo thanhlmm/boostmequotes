@@ -8,7 +8,8 @@ interface ISettings {
     maxQuotes: number;
     receivedFromCommunity: boolean,
     pushToken?: string;
-    tag: string[]
+    tag: string[];
+    enabled: boolean;
 }
 
 interface IQuotes {
