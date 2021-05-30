@@ -114,9 +114,9 @@ function getRandomItem<T>(input: T[]): T {
 }
 
 function getSuitableQuote(quotes: IQuotes[], userState: IUserState): IQuotes | null {
-  // TODO: Check if users is in right time to get quotes
   const quotesSuitable = quotes
     .filter(quote => !userState.todayQuotes.includes(quote._id))
+    .filter(quote => quote.body.length <= 300) // Filter some long quote to make sure MacOS dont cut the string
     .map(quote => {
       let rank = 0;
 
