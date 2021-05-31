@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { browser } from '$app/env';
+	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
+	import { Functions, Messaging } from '../lib';
 
 	let topics: string[] = JSON.parse(
 		'["Age","Alone","Amazing","Anger","Anniversary","Architecture","Art","Attitude","Beauty","Best","Birthday","Brainy","Business","Car","Chance","Change","Christmas","Communication","Computers","Cool","Courage","Dad","Dating","Death","Design","Diet","Dreams","Easter","Education","Environmental","Equality","Experience","Experience","Failure","Faith","Family","Famous","Father\'s Day","Fear","Finance","Fitness","Food","Forgiveness","Freedom","Friendship","Funny","Future","Gardening","God","Good","Government","Graduation","Great","Happiness","Health","History","Home","Hope","Humor","Imagination","Independence","Inspirational","Intelligence","Jealousy","Jealousy","Knowledge","Leadership","Learning","Legal","Life","Love","Marriage","Medical","Memorial Day","Men","Mom","Money","Morning","Mother\'s Day","Motivational","Movies","Moving On","Music","Nature","New Year\'s","Parenting","Patience","Patriotism","Peace","Pet","Poetry","Politics","Positive","Power","Relationship","Religion","Religion","Respect","Romantic","Sad","Saint Patrick\'s Day","Science","Smile","Society","Space","Sports","Strength","Success","Sympathy","Teacher","Technology","Teen","Thankful","Thanksgiving","Time","Travel","Trust","Truth","Valentine\'s Day","Veterans Day","War","Wedding","Wisdom","Women","Work"]'
@@ -13,113 +15,97 @@
 		receivedFromCommunity: true,
 		enabled: true
 	});
-	const channel = new BroadcastChannel('boostmequotes');
-
-	channel.onmessage = (ev: MessageEvent<IMessage>) => {
-		if (ev.data.type !== 'reply') {
-			return;
-		}
-
-		console.log('Reply msg');
-		console.log(ev.data);
-
-		switch (ev.data.name) {
-			case 'getSettings':
-				getSettingsReply(ev.data.args);
-				return;
-		}
-	};
+	let isLoading = false;
 
 	onMount(() => {
-		getFMToken();
-		getSettings();
-		navigator.serviceWorker.getRegistration('service-worker.js').then((registration) => {
-			if (registration.active) {
-				isInstalledWorker = true;
+		if (browser) {
+			const token = window.localStorage.getItem('boostmequote:token');
+
+			if (token) {
+				getSettings(token);
 			}
-
-			navigator.serviceWorker.ready.then(() => {
-				// Get service worker and sync to state
-				isInstalledWorker = true;
-			});
-		});
-	});
-
-	onDestroy(() => {
-		channel.close();
-	});
-
-	function getSettings() {
-		channel.postMessage({
-			name: 'getSettings'
-		});
-	}
-
-	function getSettingsReply(data: ISettings | null) {
-		console.log(data);
-		if (data) {
-			$formValue = data;
 		}
-	}
+	});
 
-	async function getFMToken() {
-		// Boostrap the token for sending notification
-		const { Messaging } = await import('../config');
-		Messaging().then(async (instance) => {
-			instance.useServiceWorker(await navigator.serviceWorker.getRegistration('service-worker.js'));
-
-			instance.onMessage((payload) => {
-				// TODO: Update to right notification
-				new Notification('Boost me Quotes', payload);
-			});
-
+	function getSettings(token: string) {
+		Functions().then((instance) => {
 			instance
-				.getToken({
-					vapidKey:
-						'BJns9OL0QKUPOGVSMxV5kP2BzZx64IYhgtBRxhUYw3KbtskErR5SWME71IxCxbEAUYtfGydLeCd9BrBQ8ThBx0g',
-					serviceWorkerRegistration: await navigator.serviceWorker.getRegistration(
-						'service-worker.js'
-					)
-				})
-				.then((currentToken) => {
-					if (currentToken) {
-						$formValue.pushToken = currentToken;
-					} else {
-						// Show permission request UI
-						console.log('No registration token available. Request permission to generate one.');
-						// ...
+				.httpsCallable('getSettings')(token)
+				.then(({ data }: { data: ISettings | null }) => {
+					console.log(data);
+					if (data) {
+						$formValue = data;
 					}
-				})
-				.catch((err) => {
-					console.log('An error occurred while retrieving token. ', err);
-					// ...
 				});
 		});
 	}
 
-	function handleOnSubmit() {
-		if (Notification.permission !== 'granted') {
-			alert('You need grant permission on Notification to get awesome Quotes');
-			Notification.requestPermission().then((result) => {
-				if (result === 'granted') {
-					saveSetting();
-				}
-			});
+	async function getFMToken() {
+		// Boostrap the token for sending notification
+		return Messaging()
+			.then(async (instance) => {
+				const serviceWorker = await navigator.serviceWorker.getRegistration('service-worker.js');
+				console.log(serviceWorker);
+				console.log(instance);
 
-			return;
-		}
+				instance.useServiceWorker(serviceWorker);
+
+				// instance.onMessage((payload) => {
+				// 	// TODO: Update to right notification
+				// 	new Notification('Boost me Quotes', payload);
+				// });
+
+				return instance
+					.getToken({
+						vapidKey:
+							'BJns9OL0QKUPOGVSMxV5kP2BzZx64IYhgtBRxhUYw3KbtskErR5SWME71IxCxbEAUYtfGydLeCd9BrBQ8ThBx0g',
+						serviceWorkerRegistration: serviceWorker
+					})
+					.then((currentToken) => {
+						if (currentToken) {
+							$formValue.pushToken = currentToken;
+							if (browser) {
+								window.localStorage.setItem('boostmequote:token', currentToken);
+							}
+						} else {
+							// Show permission request UI
+							console.log('No registration token available. Request permission to generate one.');
+							// ...
+						}
+
+						return currentToken;
+					})
+					.catch((err) => {
+						console.log('An error occurred while retrieving token. ', err);
+						// ...
+					});
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
+	function handleOnSubmit() {
 		saveSetting();
 	}
 
 	function saveSetting() {
-		channel.postMessage({
-			name: 'saveSettings',
-			args: $formValue
-		});
-
-		channel.postMessage({
-			name: 'boostMe'
-		});
+		isLoading = true;
+		getFMToken()
+			.then(() => {
+				console.log('Get the token');
+			})
+			.then(() => Functions())
+			.then((instance) => {
+				return instance
+					.httpsCallable('saveSettings')($formValue)
+					.then(() => {
+						new Notification('Setup complete 🚀', { body: 'Ready to boost you up' });
+					});
+			})
+			.finally(() => {
+				isLoading = false;
+			});
 	}
 </script>
 
@@ -214,15 +200,13 @@
 						</label>
 					</div>
 
-					<!-- <p>
-						{JSON.stringify($formValue, 0, 2)}
-					</p> -->
-
 					<div>
-						{#if !isInstalledWorker}
+						{#if !$formValue.pushToken}
 							<p class="text-gray-500 mb-2">Please wait while we setting up the notification</p>
 						{/if}
-						<button class="btn btn-primary" type="submit">Boost me 🚀</button>
+						<button class="btn btn-primary" class:loading={isLoading} type="submit"
+							>Boost me 🚀</button
+						>
 					</div>
 				</div>
 			</div>

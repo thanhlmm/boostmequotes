@@ -52,7 +52,20 @@ export const saveSettings = functions.https.onCall(async (data: ISettings) => {
   return true;
 });
 
-export const sendQuotes = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+export const getSettings = functions.https.onCall(async (token: string) : Promise<ISettings | null> => {
+  const userSettings = await admin.firestore().collection('users').where('pushToken', '==', token).limit(1).get()
+
+  if (userSettings.docs[0]) {
+    return {
+      ...userSettings.docs[0].data(),
+      _id: userSettings.docs[0].id
+    } as any as ISettings
+  }
+
+  return null;
+});
+
+export const sendQuotes = functions.pubsub.schedule('every 10 minutes').onRun(async (context) => {
   // export const sendQuotes = functions.runWith({ timeoutSeconds: 120 }).https.onRequest(async (request, response) => {
   const shard = random(0, 73);
   const quotes = (await (await db.doc(`quotes/${shard}`).get()).data()?.data || []).map((quote: any, index: number) => ({
@@ -151,7 +164,7 @@ interface IQuoteURL {
 }
 
 
-export const crawlBrainyquote = functions.runWith({ timeoutSeconds: 300, memory: "2GB" }).https.onRequest((request, response) => {
+export const crawlBrainyquote = functions.runWith({ timeoutSeconds: 300, memory: "1GB" }).https.onRequest((request, response) => {
   const rootURL = 'https://www.brainyquote.com';
   const quotesUrl: IQuoteURL[] = [];
   const quotes: Partial<IQuotes>[] = []
