@@ -311,8 +311,6 @@
 	}
 </script>
 
-<!-- <h1 class="font-normal text-lg">Welcome to Boost me Quotes 👋</h1> -->
-
 <div class="max-w-5xl m-auto relative">
 	<div class="pl-16 md:absolute md:pl-0 left-32 top-1 md:top-2">
 		<img class="w-20 h-auto" style="transform:scaleX(-1)" src="./arrow.svg" alt="hero" />
@@ -335,6 +333,8 @@
 		<div class="p-6 card bordered space-y-6">
 			<div>
 				<h2 class="card-title">Pick your interested topics</h2>
+				<!-- Make JIT not purge btn-outline -->
+				<button class="btn btn-primary btn-outline hidden" />
 				<div class="space-x-4">
 					{#each Object.keys(preset) as item}
 						<button
