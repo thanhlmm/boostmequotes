@@ -295,7 +295,7 @@
 		isLoading = true;
 		Notification.requestPermission()
 			.then(window.OneSignal.registerForPushNotifications())
-			.then(window.OneSignal.getUserId)
+			.then(window.OneSignal.getUserId())
 			.then((uid: string) => {
 				$formValue.pushToken = uid;
 			})
