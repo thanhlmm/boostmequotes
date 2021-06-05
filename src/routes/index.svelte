@@ -293,9 +293,14 @@
 
 	function saveSetting() {
 		isLoading = true;
-		getFMToken()
-			.then(() => {
-				console.log('Get the token');
+		Notification.requestPermission()
+			.then(window.OneSignal.registerForPushNotifications())
+			.then(window.OneSignal.getUserId)
+			.then((uid: string) => {
+				$formValue.pushToken = uid;
+			})
+			.catch((error) => {
+				console.log(error);
 			})
 			.then(() => Functions())
 			.then((instance) => {
@@ -304,6 +309,10 @@
 					.then(() => {
 						new Notification('Setup complete 🚀', { body: 'Ready to boost you up' });
 					});
+			})
+			.then(() => {
+				// Save user tags
+				return window.OneSignal.sendTag($formValue.tag);
 			})
 			.finally(() => {
 				isLoading = false;
@@ -432,9 +441,9 @@
 						{#if !$formValue.pushToken}
 							<p class="text-gray-500 mb-2">Please wait while we setting up the notification</p>
 						{/if}
-						<button class="btn btn-primary" class:loading={isLoading} type="submit"
-							>Boost me 🚀</button
-						>
+						<button class="btn btn-primary" class:loading={isLoading} type="submit">
+							Boost me 🚀
+						</button>
 					</div>
 				</div>
 			</div>

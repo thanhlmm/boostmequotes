@@ -28,3 +28,9 @@ interface IMessage {
     type: "invoke" | "reply"
     args: any;
 }
+
+export declare global {
+    interface Window {
+        OneSignal: any;
+    }
+}

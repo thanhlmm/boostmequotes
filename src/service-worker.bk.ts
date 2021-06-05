@@ -43,7 +43,7 @@ messaging.setBackgroundMessageHandler((payload) => {
     body: payload.data.body,
     icon: payload.data.icon,
     tag: payload.data.tag,
-    data: payload.data.link
+    data: payload.data.link,
   });
 })
 
