@@ -10,6 +10,7 @@ interface ISettings {
     pushToken?: string;
     tag: string[];
     enabled: boolean;
+    preset?: string[];
 }
 
 interface IQuotes {
@@ -27,10 +28,4 @@ interface IMessage {
     name: string;
     type: "invoke" | "reply"
     args: any;
-}
-
-export declare global {
-    interface Window {
-        OneSignal: any;
-    }
 }

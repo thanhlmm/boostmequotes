@@ -10,6 +10,7 @@ interface ISettings {
     tag: string[];
     enabled: boolean;
     timezone?: string;
+    preset?: string[];
 }
 
 interface IUserState {

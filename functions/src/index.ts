@@ -7,6 +7,7 @@ import sequence from 'promise-sequence';
 import { chunk, random } from 'lodash';
 import * as dayjs from 'dayjs';
 import * as isBetween from 'dayjs/plugin/isBetween';
+import * as OneSignal from 'onesignal-node';
 dayjs.extend(isBetween)
 
 
@@ -16,43 +17,47 @@ const db = admin.firestore();
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onRequest((request, response) => {
-  cors(request, response, async () => {
-    const chunk = await admin.firestore().collection('quotes').doc(String(request.query.page) || "0").get();
+// export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onRequest((request, response) => {
+//   cors(request, response, async () => {
+//     const chunk = await admin.firestore().collection('quotes').doc(String(request.query.page) || "0").get();
 
-    if (!chunk.exists) {
-      response.send({
-        quotes: []
-      });
-    }
+//     if (!chunk.exists) {
+//       response.send({
+//         quotes: []
+//       });
+//     }
 
-    response.send({
-      quotes: (chunk.data()?.data || [] as any[]).map((quote: any, index: number) => ({
-        ...quote,
-        _id: `${chunk.id}_${index}`
-      }))
-    });
-  });
-});
+//     response.send({
+//       quotes: (chunk.data()?.data || [] as any[]).map((quote: any, index: number) => ({
+//         ...quote,
+//         _id: `${chunk.id}_${index}`
+//       }))
+//     });
+//   });
+// });
 
 export const saveSettings = functions.https.onCall(async (data: ISettings) => {
-  await admin.firestore().collection('users').add({
-    ...data,
-    remainingQuote: data.maxQuotes,
-    todayQuotes: [],
-    nextTrigger: dayjs().unix() + 30
-  });
-
   if (data.pushToken) {
-    data.tag.forEach(async topic => {
-      await admin.messaging().subscribeToTopic(data.pushToken as string, topic);
-    })
+    await admin.firestore().collection('users').doc(data.pushToken).set({
+      ...data,
+      remainingQuote: data.maxQuotes,
+      todayQuotes: [],
+      nextTrigger: dayjs().unix() + 30
+    });
+
+    return true;
   }
 
-  return true;
+  // if (data.pushToken) {
+  //   data.tag.forEach(async topic => {
+  //     await admin.messaging().subscribeToTopic(data.pushToken as string, topic);
+  //   })
+  // }
+
+  return false;
 });
 
-export const getSettings = functions.https.onCall(async (token: string) : Promise<ISettings | null> => {
+export const getSettings = functions.https.onCall(async (token: string): Promise<ISettings | null> => {
   const userSettings = await admin.firestore().collection('users').where('pushToken', '==', token).limit(1).get()
 
   if (userSettings.docs[0]) {
@@ -80,21 +85,28 @@ export const sendQuotes = functions.pubsub.schedule('every 10 minutes').onRun(as
   functions.logger.info(`Prepare to send to`);
   functions.logger.info(users);
 
-  const messaging = admin.messaging();
+  const oneSignalClient = new OneSignal.Client(functions.config().one_signal.key, functions.config().one_signal.secret);
+
   await Promise.all(users.map(async (user) => {
     const userData = user as any as IUserState & ISettings;
     const quote = getSuitableQuote(quotes, user as unknown as IUserState);
     if (quote && userData.pushToken) {
-      // TODO: Refactor to send by topic
 
       functions.logger.info(`Start send quote to ${userData.pushToken}`);
-      await messaging.send({
-        token: userData.pushToken,
-        notification: {
-          title: quote.author,
-          body: quote.body,
-        }
-      });
+      // TODO: Refactor to send by topic
+      // TODO: Use `delivery_time_of_day` to deliver based on prefer time
+      await oneSignalClient.createNotification({
+        headings: {
+          en: quote.author
+        },
+        contents: {
+          en: quote.body,
+        },
+        url: "https://boostmequotes.vercel.app",
+        chrome_web_image: '',
+        chrome_big_picture: '',
+        include_player_ids: [userData.pushToken]
+      })
 
       functions.logger.info(`Save next trigger time`)
       await saveUserState(userData._id, {

@@ -298,6 +298,7 @@
 			.then(() => window.OneSignal.getUserId())
 			.then((uid: string) => {
 				$formValue.pushToken = uid;
+				$formValue.preset = presetTag;
 			})
 			.catch((error) => {
 				console.log(error);
