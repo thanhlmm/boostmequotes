@@ -330,7 +330,7 @@
 		<div>
 			<h1 class="text-4xl font-medium mb-2">Boost me Quotes 😼</h1>
 			<p class="text-gray-500 max-w-md text-lg">
-				Get your 💩 done by showing an inspirational quotes randomly.
+				Get your 💩 done by showing inspirational quotes randomly.
 				<br />
 				Gain your spirit back.
 			</p>
