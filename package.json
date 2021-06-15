@@ -2,7 +2,7 @@
   "name": "boost-me-quotes",
   "version": "0.0.1",
   "scripts": {
-    "dev": "svelte-kit dev -p 4000 -H",
+    "dev": "svelte-kit dev -p 4000",
     "build": "svelte-kit build",
     "preview": "svelte-kit preview",
     "lint": "prettier --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
