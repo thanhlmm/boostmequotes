@@ -1,10 +1,10 @@
 <script>
-	let text = 'Christmas';
+	// let text = 'Christmas';
 </script>
 
 <div class="container flex flex-col h-screen items-center justify-center text-center">
 	<div class="m-0 p-0 text-white">
-		<h1 class="text">Marry {text}</h1>
+		<h1 class="text">Marry Christmas</h1>
 		<h1 class="text">and Happy New Year!</h1>
 	</div>
 </div>
