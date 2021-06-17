@@ -39,7 +39,7 @@
 
 		<div class="w-60 h-12">
 			<button class="downloadBtn w-full h-full text-2xl outline-none border-none cursor-pointer">
-				<Icon scale="2" data={download} style="margin-right: 1rem;"/>Download
+				<Icon scale="2" data={download} style="margin-right: 1rem;"/>Get Image
 			</button>
 		</div>
 	</div>
