@@ -14,16 +14,30 @@
 	const randomNum =  Math.floor(Math.random() * arrImg.length);
 	const randomImg = arrImg[randomNum]
 	
+	// const quotes = ['Marry Christmas. and Happy New Year!']
+	// if(quotes.body.includes(".")){
+	// 	const newQuotes = quotes[0].split('.')
+	// 	console.log(newQuotes)
+	// }
+
+	const quotes = {
+		body: "Không chỉ riêng ở Ý mà ngay tại nhiều quốc gia trên thế giới, việc trộm cắp các tác phẩm cổ từ lâu đã không có gì quá xa lạ. Ngay từ thời xa xưa, đây đã làm một vấn nạn khó có thể kiểm soát được. Tuy nhiên hiện nay, do tình hình bất ổn của đại dịch Covid-19",
+		author: "Thanh Binh"
+	}
+	const quotesLength = quotes.body.length
+
+
 	
+
 </script>
 
-<div class="flex flex-col h-screen items-center justify-center text-center relative" style="background: url({randomImg}) no-repeat center center/cover">
-	<div class="m-0 p-0 text-white">
-		<h1 class="text">Marry Christmas</h1>
-		<h1 class="text">and Happy New Year!</h1>
+<div class="background relative flex flex-col h-screen items-center justify-center text-center relative" style="background: url({randomImg}) no-repeat center center/cover">
+	<div class="m-0 p-0 text-white absolute z-10">
+		<p class="text mb-6" class:changeFontSize={quotesLength > 40}>{quotes.body}</p>
+		<p class="authorText text-right w-3/5">Thanh Bình</p>
 	</div>
 
-	<div class="absolute top-4 right-2 lg:top-6 lg:right-8 flex flex-col gap-4">
+	<div class="absolute z-10 top-4 right-2 lg:top-6 lg:right-8 flex flex-col gap-4">
 		<div class="shareBtn w-60 h-12 relative flex items-center justify-evenly overflow-hidden cursor-pointer">
 			<span 
 				class="absolute w-full h-full text-2xl" 
@@ -48,9 +62,31 @@
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Charm&display=swap');
+	.background:after{
+		content: "";
+  		position: absolute;
+  		left: 0;
+  		top: 0;
+  		width: 100%;
+  		height: 100%;
+  		background-color: rgba(0, 0, 0, 0.4);
+  		background-image: linear-gradient(
+    		to top,
+    	rgba(0, 0, 0, 0.8),
+    	rgba(0, 0, 0, 0) 60%,
+    	rgba(0, 0, 0, 0.8) 100%
+  		);
+	}
+	.changeFontSize{
+		font-size: 1.9rem !important;
+	}
 	.text {
 		font-family: 'Charm', cursive;
-		font-size: 6rem;
+		font-size: 4rem;
+	}
+	.authorText{
+		font-size: 1.5rem;
+		margin: 0 auto;
 	}
 	.shareBtn{
 		background: #dfe6e9;
