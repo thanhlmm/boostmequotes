@@ -14,27 +14,32 @@ dayjs.extend(isBetween)
 admin.initializeApp();
 const db = admin.firestore();
 
+const totalQuotesPage = 73;
+const maxPerPage = 1000;
+
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-// export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onRequest((request, response) => {
-//   cors(request, response, async () => {
-//     const chunk = await admin.firestore().collection('quotes').doc(String(request.query.page) || "0").get();
+export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onRequest((request, response) => {
+  cors(request, response, async () => {
+    const limit = Number(request.query.page) || 200;
+    const chunk = await admin.firestore().collection('quotes').doc(String(random(1, totalQuotesPage))).get();
 
-//     if (!chunk.exists) {
-//       response.send({
-//         quotes: []
-//       });
-//     }
+    if (!chunk.exists) {
+      response.send({
+        quotes: []
+      });
+    }
 
-//     response.send({
-//       quotes: (chunk.data()?.data || [] as any[]).map((quote: any, index: number) => ({
-//         ...quote,
-//         _id: `${chunk.id}_${index}`
-//       }))
-//     });
-//   });
-// });
+    response.send({
+
+      quotes: (chunk.data()?.data || [] as any[]).slice(random(maxPerPage - limit, limit)).map((quote: any, index: number) => ({
+        ...quote,
+        _id: `${chunk.id}_${index}`
+      }))
+    });
+  });
+});
 
 export const saveSettings = functions.https.onCall(async (data: ISettings) => {
   if (data.pushToken) {

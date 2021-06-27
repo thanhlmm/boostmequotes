@@ -200,6 +200,9 @@
 	});
 	let isLoading = false;
 	let presetTag: Array<keyof typeof preset> = [];
+	let quotes: IQuotes[] = [];
+	let quote: IQuotes;
+	let quoteImage: IQuoteImage;
 
 	onMount(() => {
 		if (browser) {
@@ -209,7 +212,43 @@
 				getSettings(token);
 			}
 		}
+
+		fetch('https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes', { method: 'GET' })
+			.then((response) => response.json())
+			.then((result) => {
+				quotes = result.quotes;
+				setRandomQuote(quotes);
+			})
+			.catch((error) => console.log('error', error));
 	});
+
+	function getRandomItem<T>(input: T[]): T {
+		return input[Math.floor(Math.random() * input.length)];
+	}
+
+	function setRandomQuote(quotes: IQuotes[]) {
+		const quoteItem = getRandomItem(quotes);
+		getImages(quoteItem.tag).then(() => {
+			quote = quoteItem;
+		});
+	}
+
+	function getImages(tag: string[]) {
+		return fetch(
+			'https://api.unsplash.com/photos/random?client_id=mofCb02A6mHMmxL0BQ_T25vUYbAOH4hDFUApVfyHpfs&topics' +
+				tag.join(','),
+			{ method: 'GET' }
+		)
+			.then((response) => response.json())
+			.then((result) => {
+				quoteImage = {
+					url: result.urls.regular,
+					author: result.user.name,
+					authorUrl: result.user.portfolio_url
+				};
+			})
+			.catch((error) => console.log('error', error));
+	}
 
 	function toggleTag(tag: string) {
 		if (presetTag.includes(tag)) {
@@ -322,11 +361,8 @@
 </script>
 
 <div class="max-w-5xl m-auto relative">
-	<div class="pl-16 md:absolute md:pl-0 left-32 top-1 md:top-2">
-		<img class="w-20 h-auto" style="transform:scaleX(-1)" src="./arrow.svg" alt="hero" />
-		<p class="md:pl-3 pt-2 text-center">Approve to<br />get your motivation back</p>
-	</div>
-	<div class="flex flex-col md:flex-row md:items-center p-6 mt-10 md:mt-36">
+	<!-- Hero section -->
+	<div class="flex flex-col md:flex-row md:items-center p-6 mt-4">
 		<div>
 			<h1 class="text-4xl font-medium mb-2">Boost me Quotes 😼</h1>
 			<p class="text-gray-500 max-w-md text-lg">
@@ -339,7 +375,37 @@
 			<img src="./hero.svg" alt="hero" />
 		</div>
 	</div>
-	<form on:submit|preventDefault={handleOnSubmit}>
+
+	<!-- Quotes section -->
+	<div class="card shadow-xl image-full mt-4 p-2 md:p-0">
+		<figure style="height: 400px;">
+			<img src={quoteImage?.url || 'https://picsum.photos/id/1005/400/250'} />
+		</figure>
+		<div class="justify-end card-body">
+			{#if quote}
+				<h2 class="card-title">— {quote.author}</h2>
+				<p class="text-lg">{quote.body}</p>
+				<div class="card-actions">
+					<button
+						class="btn btn-primary btn-outline mt-2"
+						on:click|preventDefault={() => setRandomQuote(quotes)}>Random quote</button
+					>
+				</div>
+			{/if}
+			{#if quoteImage}
+				<div class="text-sm mt-2 opacity-80">
+					Photo by <a href={quoteImage.authorUrl} class="underline" target="_blank"
+						>{quoteImage.author}</a
+					>
+					on
+					<a href="https://unsplash.com/" class="underline" target="_blank">Unsplash</a>
+				</div>
+			{/if}
+		</div>
+	</div>
+
+	<!-- Settings -->
+	<form class="mt-4" on:submit|preventDefault={handleOnSubmit}>
 		<div class="p-6 card bordered space-y-6">
 			<div>
 				<h2 class="card-title">Pick your interested topics</h2>

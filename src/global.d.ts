@@ -29,3 +29,9 @@ interface IMessage {
     type: "invoke" | "reply"
     args: any;
 }
+
+interface IQuoteImage {
+    url: string;
+    author: string;
+    authorUrl: string;
+}
