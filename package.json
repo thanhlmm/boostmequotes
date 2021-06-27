@@ -25,6 +25,7 @@
     "postcss-cli": "^8.3.1",
     "prettier": "~2.2.1",
     "prettier-plugin-svelte": "^2.2.0",
+    "svelte-fa": "^2.2.0",
     "svelte-preprocess": "^4.0.0",
     "tailwindcss": "^2.1.2",
     "tslib": "^2.0.0",
@@ -35,6 +36,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@svouch/pouchdb": "^0.0.1-0",
     "daisyui": "^1.1.1",
     "dayjs": "^1.10.5",
@@ -43,6 +45,7 @@
     "pouchdb": "^7.2.2",
     "pouchdb-browser": "^7.2.2",
     "svelte": "^3.38.2",
+    "svelte-awesome": "^2.3.2",
     "workbox-precaching": "^6.1.5",
     "workbox-window": "^6.1.5"
   }
