@@ -281,51 +281,6 @@
 		});
 	}
 
-	async function getFMToken() {
-		// Boostrap the token for sending notification
-		return Messaging()
-			.then(async (instance) => {
-				const serviceWorker = await navigator.serviceWorker.getRegistration('service-worker.js');
-				console.log(serviceWorker);
-				console.log(instance);
-
-				instance.useServiceWorker(serviceWorker);
-
-				// instance.onMessage((payload) => {
-				// 	// TODO: Update to right notification
-				// 	new Notification('Boost me Quotes', payload);
-				// });
-
-				return instance
-					.getToken({
-						vapidKey:
-							'BJns9OL0QKUPOGVSMxV5kP2BzZx64IYhgtBRxhUYw3KbtskErR5SWME71IxCxbEAUYtfGydLeCd9BrBQ8ThBx0g',
-						serviceWorkerRegistration: serviceWorker
-					})
-					.then((currentToken) => {
-						if (currentToken) {
-							$formValue.pushToken = currentToken;
-							if (browser) {
-								window.localStorage.setItem('boostmequote:token', currentToken);
-							}
-						} else {
-							// Show permission request UI
-							console.log('No registration token available. Request permission to generate one.');
-							// ...
-						}
-
-						return currentToken;
-					})
-					.catch((err) => {
-						console.log('An error occurred while retrieving token. ', err);
-						// ...
-					});
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	}
-
 	function handleOnSubmit() {
 		saveSetting();
 	}
