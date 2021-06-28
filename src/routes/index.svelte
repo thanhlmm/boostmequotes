@@ -235,7 +235,7 @@
 
 	function getImages(tag: string[]) {
 		return fetch(
-			'https://us-central1-boost-me-quotes.cloudfunctions.net/getRandomImage?topics' +
+			'https://worker.refiapp.workers.dev/randomImage?topics' +
 				tag.join(','),
 			{ method: 'GET' }
 		)
