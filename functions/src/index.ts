@@ -52,11 +52,7 @@ export const getRandomImage = functions.https.onRequest((request, response) => {
     )
       .then((response) => response.json())
       .then((result) => {
-        response.send({
-          url: result.urls.regular,
-          author: result.user.name,
-          authorUrl: result.user.portfolio_url
-        });
+        response.send(result);
       })
       .catch((error) => console.log('error', error));
   });
