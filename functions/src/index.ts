@@ -20,7 +20,7 @@ const maxPerPage = 1000;
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB" }).https.onRequest((request, response) => {
+export const getQuotes = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     const limit = Number(request.query.page) || 200;
     const chunk = await admin.firestore().collection('quotes').doc(String(random(1, totalQuotesPage))).get();
@@ -39,6 +39,26 @@ export const getQuotes = functions.runWith({ timeoutSeconds: 120, memory: "512MB
         _id: `${chunk.id}_${index}`
       }))
     });
+  });
+});
+
+export const getRandomImage = functions.https.onRequest((request, response) => {
+  cors(request, response, async () => {
+    const topics = request.query.topics;
+
+    return fetch(
+      'https://api.unsplash.com/photos/random?client_id=mofCb02A6mHMmxL0BQ_T25vUYbAOH4hDFUApVfyHpfs&topics=' + topics,
+      { method: 'GET' }
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        response.send({
+          url: result.urls.regular,
+          author: result.user.name,
+          authorUrl: result.user.portfolio_url
+        });
+      })
+      .catch((error) => console.log('error', error));
   });
 });
 

@@ -235,7 +235,7 @@
 
 	function getImages(tag: string[]) {
 		return fetch(
-			'https://api.unsplash.com/photos/random?client_id=mofCb02A6mHMmxL0BQ_T25vUYbAOH4hDFUApVfyHpfs&topics' +
+			'https://us-central1-boost-me-quotes.cloudfunctions.net/getRandomImage?topics' +
 				tag.join(','),
 			{ method: 'GET' }
 		)
@@ -398,7 +398,11 @@
 						>{quoteImage.author}</a
 					>
 					on
-					<a href="https://unsplash.com/" class="underline" target="_blank">Unsplash</a>
+					<a
+						href="https://unsplash.com/?utm_source=BoostmeQuotes&utm_medium=referral"
+						class="underline"
+						target="_blank">Unsplash</a
+					>
 				</div>
 			{/if}
 		</div>
