@@ -2,8 +2,10 @@
 	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
-	import { Functions, Messaging } from '../lib';
+	import { Functions } from '../lib';
 	import { uniq } from 'lodash';
+	import domtoimage from 'dom-to-image';
+	import { saveAs } from 'file-saver';
 
 	let topics: string[] = [
 		'Age',
@@ -203,6 +205,7 @@
 	let quotes: IQuotes[] = [];
 	let quote: IQuotes;
 	let quoteImage: IQuoteImage;
+	let imageRef: HTMLElement;
 
 	onMount(() => {
 		if (browser) {
@@ -234,11 +237,9 @@
 	}
 
 	function getImages(tag: string[]) {
-		return fetch(
-			'https://worker.refiapp.workers.dev/randomImage?topics' +
-				tag.join(','),
-			{ method: 'GET' }
-		)
+		return fetch('https://worker.refiapp.workers.dev/randomImage?topics' + tag.join(','), {
+			method: 'GET'
+		})
 			.then((response) => response.json())
 			.then((result) => {
 				quoteImage = {
@@ -248,6 +249,21 @@
 				};
 			})
 			.catch((error) => console.log('error', error));
+	}
+
+	function downloadImage() {
+		domtoimage
+			.toBlob(imageRef, {
+				filter: (node) => {
+					return node.tagName !== 'BUTTON';
+				}
+			})
+			.then(function (blob) {
+				saveAs(blob, `${quote.author}_quote.png`);
+			})
+			.catch((error) => {
+				console.log(error);
+			});
 	}
 
 	function toggleTag(tag: string) {
@@ -332,11 +348,30 @@
 	</div>
 
 	<!-- Quotes section -->
-	<div class="card shadow-xl image-full mt-4 p-2 md:p-0">
+	<div class="card shadow-xl image-full mt-4 p-2 md:p-0" bind:this={imageRef}>
 		<figure style="height: 400px;">
 			<img src={quoteImage?.url || 'https://picsum.photos/id/1005/400/250'} />
 		</figure>
 		<div class="justify-end card-body">
+			<button
+				class="px-2 py-1 rounded text-sm absolute right-2 top-2 border border-transparent hover:border-gray-100 group transition-all"
+				on:click|preventDefault={downloadImage}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-5 w-5 inline-block"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+					/>
+				</svg>
+			</button>
 			{#if quote}
 				<h2 class="card-title">— {quote.author}</h2>
 				<p class="text-lg">{quote.body}</p>

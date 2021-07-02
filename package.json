@@ -38,6 +38,8 @@
     "@svouch/pouchdb": "^0.0.1-0",
     "daisyui": "^1.1.1",
     "dayjs": "^1.10.5",
+    "dom-to-image": "^2.6.0",
+    "file-saver": "^2.0.5",
     "firebase": "^8.6.2",
     "localforage": "^1.9.0",
     "pouchdb": "^7.2.2",
