@@ -4,7 +4,7 @@
 	import { writable } from 'svelte/store';
 	import { Functions } from '../lib';
 	import { uniq } from 'lodash';
-	import domtoimage from 'dom-to-image';
+	import * as htmlToImage from 'html-to-image';
 	import { saveAs } from 'file-saver';
 
 	let topics: string[] = [
@@ -252,7 +252,7 @@
 	}
 
 	function downloadImage() {
-		domtoimage
+		htmlToImage
 			.toBlob(imageRef, {
 				filter: (node) => {
 					return node.tagName !== 'BUTTON';
@@ -353,7 +353,7 @@
 			<img src={quoteImage?.url || 'https://picsum.photos/id/1005/400/250'} />
 		</figure>
 		<div class="justify-end card-body">
-			<!-- <button
+			<button
 				class="px-2 py-1 rounded text-sm absolute right-2 top-2 border border-transparent hover:border-gray-100 group transition-all"
 				on:click|preventDefault={downloadImage}
 			>
@@ -371,7 +371,7 @@
 						d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
 					/>
 				</svg>
-			</button> -->
+			</button>
 			{#if quote}
 				<h2 class="card-title">— {quote.author}</h2>
 				<p class="text-lg">{quote.body}</p>
