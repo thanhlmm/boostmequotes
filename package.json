@@ -10,10 +10,10 @@
     "postcss:watch": "TAILWIND_MODE=watch postcss tailwind.css -o build.css"
   },
   "devDependencies": {
-    "@sveltejs/adapter-vercel": "next",
     "@poppanator/sveltekit-svg": "^0.1.2",
     "@sveltejs/adapter-static": "^1.0.0-next.11",
-    "@sveltejs/kit": "next",
+    "@sveltejs/adapter-vercel": "next",
+    "@sveltejs/kit": "^1.0.0-next.120",
     "@tailwindcss/jit": "^0.1.18",
     "@types/pouchdb": "^6.4.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
