@@ -348,7 +348,7 @@
 	</div>
 
 	<!-- Quotes section -->
-	<div class="card shadow-xl image-full mt-4 p-2 md:p-0" bind:this={imageRef}>
+	<div class="card shadow-xl image-full mt-4 p-2 md:p-0" bind:this={imageRef} id="quote-card">
 		<figure style="height: 400px;">
 			<img src={quoteImage?.url || 'https://picsum.photos/id/1005/400/250'} />
 		</figure>
