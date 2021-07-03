@@ -1,3 +1,24 @@
+<script context="module" lang="ts">
+	/**
+	 * @type {import('@sveltejs/kit').Load}
+	 */
+	export async function load({ page, fetch, session, context }) {
+		const quotes = await fetch('https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes', {
+			method: 'GET'
+		})
+			.then((response) => response.json())
+			.then((result) => {
+				return result.quotes;
+			});
+
+		return {
+			props: {
+				quotes
+			}
+		};
+	}
+</script>
+
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
@@ -202,7 +223,7 @@
 	});
 	let isLoading = false;
 	let presetTag: Array<keyof typeof preset> = [];
-	let quotes: IQuotes[] = [];
+	export let quotes: IQuotes[] = [];
 	let quote: IQuotes;
 	let quoteImage: IQuoteImage;
 	let imageRef: HTMLElement;
@@ -216,13 +237,7 @@
 			}
 		}
 
-		fetch('https://us-central1-boost-me-quotes.cloudfunctions.net/getQuotes', { method: 'GET' })
-			.then((response) => response.json())
-			.then((result) => {
-				quotes = result.quotes;
-				setRandomQuote(quotes);
-			})
-			.catch((error) => console.log('error', error));
+		setRandomQuote(quotes);
 	});
 
 	function getRandomItem<T>(input: T[]): T {
