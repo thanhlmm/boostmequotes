@@ -385,13 +385,13 @@
 			{#if quoteImage}
 				<div class="text-sm mt-2 opacity-80">
 					Photo by <a
-						href={`${quoteImage.authorUrl}?utm_source=your_app_name&utm_medium=referral`}
+						href={`${quoteImage.authorUrl}?utm_source=boost_me_quotes&utm_medium=referral`}
 						class="underline"
 						target="_blank">{quoteImage.author}</a
 					>
 					on
 					<a
-						href="https://unsplash.com/?utm_source=BoostmeQuotes&utm_medium=referral"
+						href="https://unsplash.com/?utm_source=boost_me_quotes&utm_medium=referral"
 						class="underline"
 						target="_blank">Unsplash</a
 					>
