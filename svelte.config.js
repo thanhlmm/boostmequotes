@@ -11,13 +11,12 @@ const config = {
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
 		ssr: true,
-		// adapter: vercel(),
-		adapter: adapter({
-			// default options are shown
-			pages: 'build',
-			assets: 'build',
-			fallback: null
-		}),
+		adapter: vercel(),
+		// adapter: adapter({
+		// 	pages: 'build',
+		// 	assets: 'build',
+		// 	fallback: null
+		// }),
 		files: {
 			assets: './src/assets'
 		}
