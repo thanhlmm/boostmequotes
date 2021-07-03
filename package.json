@@ -10,6 +10,7 @@
     "postcss:watch": "TAILWIND_MODE=watch postcss tailwind.css -o build.css"
   },
   "devDependencies": {
+    "@sveltejs/adapter-vercel": "next",
     "@poppanator/sveltekit-svg": "^0.1.2",
     "@sveltejs/adapter-static": "^1.0.0-next.11",
     "@sveltejs/kit": "next",
@@ -35,7 +36,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@sveltejs/adapter-vercel": "^1.0.0-next.0",
     "@svouch/pouchdb": "^0.0.1-0",
     "daisyui": "^1.1.1",
     "dayjs": "^1.10.5",
