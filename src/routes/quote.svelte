@@ -4,7 +4,7 @@
 	 */
 	export async function load({ page, fetch, session, context }) {
 		const quoteImage = await fetch(
-			'https://worker.refiapp.workers.dev/randomImage?topics' + page.query.get('tag'),
+			'https://worker.refiapp.workers.dev/randomImage?topics' + decodeURI(page.query.get('tag')),
 			{
 				method: 'GET'
 			}
@@ -23,8 +23,8 @@
 		return {
 			props: {
 				quote: {
-					body: page.query.get('body'),
-					author: page.query.get('author')
+					body: decodeURI(page.query.get('body')),
+					author: decodeURI(page.query.get('author'))
 				},
 				quoteImage
 			}
