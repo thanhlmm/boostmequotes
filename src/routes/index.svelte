@@ -354,7 +354,7 @@
 			<p class="text-gray-500 max-w-md text-lg">
 				Get your 💩 done by showing inspirational quotes randomly.
 				<br />
-				Gain your engergy back.
+				Gain your energy back.
 			</p>
 		</div>
 		<div class="w-full md:w-2/3 md:pl-4">
