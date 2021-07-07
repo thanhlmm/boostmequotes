@@ -25,8 +25,6 @@
 	import { writable } from 'svelte/store';
 	import { Functions } from '../lib';
 	import { uniq } from 'lodash';
-	import * as htmlToImage from 'html-to-image';
-	import { saveAs } from 'file-saver';
 	import Quote from '../components/quote.svelte';
 
 	let topics: string[] = [

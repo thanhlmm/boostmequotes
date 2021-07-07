@@ -33,7 +33,7 @@
 </script>
 
 <script lang="ts">
-	import Quote from 'src/components/quote.svelte';
+	import Quote from '../components/quote.svelte';
 
 	export let quote: IQuotes;
 	export let quoteImage: IQuoteImage;
