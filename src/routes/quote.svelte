@@ -44,6 +44,7 @@
 		htmlToImage
 			.toBlob(imageRef, {
 				filter: (node) => {
+					node.style.borderRadius = '0';
 					return node.tagName !== 'BUTTON';
 				}
 			})
