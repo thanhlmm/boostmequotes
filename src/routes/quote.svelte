@@ -41,5 +41,7 @@
 
 <div class="max-w-5xl m-auto relative">
 	<!-- Quotes section -->
-	<Quote quote={quote} quoteImage={quoteImage} />
+	<div class="mt-4">
+		<Quote quote={quote} quoteImage={quoteImage} />
+	</div>
 </div>

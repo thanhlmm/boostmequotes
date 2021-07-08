@@ -346,7 +346,9 @@
 	</div>
 
 	<!-- Quotes section -->
-	<Quote  quote={quote} quoteImage={quoteImage} enableRandom on:randomQuote={setRandomQuote} />
+	<div class="mt-4">
+		<Quote  quote={quote} quoteImage={quoteImage} enableRandom on:randomQuote={setRandomQuote} />
+	</div>
 
 	<!-- Settings -->
 	<form class="mt-4" on:submit|preventDefault={handleOnSubmit}>
