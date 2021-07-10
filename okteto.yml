@@ -1,0 +1,9 @@
+name: boostmequoes
+autocreate: true
+image: okteto/node:14
+command: bash
+sync:
+  - .:/usr/src/app
+forward:
+  - 3000:3000
+persistentVolume: {}

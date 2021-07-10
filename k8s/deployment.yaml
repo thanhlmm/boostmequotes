@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boostmequoes
+spec:
+  selector:
+    matchLabels:
+      app: boostmequoes
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: boostmequoes
+    spec:
+      containers:
+        - name: boostmequoes
+          image: okteto.dev/boostmequoes:latest
+          ports:
+            - containerPort: 3000
