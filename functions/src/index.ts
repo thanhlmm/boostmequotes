@@ -124,7 +124,8 @@ export const sendQuotes = functions.pubsub.schedule('every 10 minutes').onRun(as
         contents: {
           en: stringToEmoji(quote.body),
         },
-        url: "https://boostmequotes.vercel.app",
+        // big_picture: '',
+        url: encodeURI(`https://boostmequotes.vercel.app/quote/?body=${quote.body}&author=${quote.author}&tag=${quote.tag.join(',')}`),
         chrome_web_image: '',
         chrome_big_picture: '',
         include_player_ids: [userData.pushToken]
