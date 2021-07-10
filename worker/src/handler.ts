@@ -1,3 +1,5 @@
+import html2canvas from 'html2canvas';
+
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "content-type": "application/json;charset=UTF-8"
@@ -20,4 +22,21 @@ export async function getRandomImage(request: Request): Promise<Response> {
     .catch((error) => new Response(JSON.stringify(error), {
       headers
     }));
+}
+
+class ElementHandler {
+  async element(element: any) {
+    await html2canvas(element).then(function (canvas) {
+      element.replace(canvas);
+    });
+  }
+}
+
+export async function getQuoteImage(request: Request): Promise<Response> {
+  const { searchParams } = new URL(request.url)
+  const url = searchParams.get('url') as string;
+
+  const res = await fetch(url, { method: 'GET' })
+
+  return new HTMLRewriter().on("div#quote-card", new ElementHandler()).transform(res)
 }

@@ -1,11 +1,12 @@
 
 import { Router } from 'itty-router'
-import { getRandomImage } from './handler'
+import { getRandomImage, getQuoteImage } from './handler'
 
 // Create a new router
 const router = Router();
 
 router.get("/randomImage", getRandomImage);
+router.get("/quoteImage", getQuoteImage);
 
 router.all("*", () => new Response("404, not found!", { status: 404 }))
 
