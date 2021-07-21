@@ -66,7 +66,7 @@
 		</button>
 		{#if quote}
 			<h2 class="card-title">— {quote.author}</h2>
-			<p class="text-lg">{quote.body.replaceAll('%2C', '')}</p>
+			<p class="text-lg">{quote.body.split('%2C').join('')}</p>
 			<div class="card-actions">
 				{#if enableRandom}
 					<button class="btn btn-primary btn-outline mt-2" on:click|preventDefault={setRandomQuote}
