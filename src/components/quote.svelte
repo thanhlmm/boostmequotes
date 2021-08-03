@@ -65,8 +65,8 @@
 			</svg>
 		</button>
 		{#if quote}
-			<h2 class="card-title">— {quote.author}</h2>
-			<p class="text-lg">{quote.body.split('%2C').join('')}</p>
+			<h2 class="card-title text-2xl">— {quote.author}</h2>
+			<p class="text-2xl">{quote.body.split('%2C').join('"')}</p>
 			<div class="card-actions">
 				{#if enableRandom}
 					<button class="btn btn-primary btn-outline mt-2" on:click|preventDefault={setRandomQuote}
